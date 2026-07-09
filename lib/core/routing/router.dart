@@ -1,7 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'placeholder_screens.dart';
+
+// Concrete Screen Imports
+import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/profile_screen.dart';
+import '../../features/auth/presentation/settings_screen.dart';
+import '../../features/catalog/presentation/home_screen.dart';
+import '../../features/catalog/presentation/categories_screen.dart';
+import '../../features/catalog/presentation/product_list_screen.dart';
+import '../../features/catalog/presentation/product_detail_screen.dart';
+import '../../features/cart/presentation/cart_screen.dart';
+import '../../features/wishlist/presentation/wishlist_screen.dart';
+import '../../features/checkout/presentation/checkout_screen.dart';
+import '../../features/checkout/presentation/order_confirmation_screen.dart';
+import '../../features/orders/presentation/orders_list_screen.dart';
+import '../../features/orders/presentation/order_detail_screen.dart';
+import '../../features/reviews/presentation/reviews_screen.dart';
+import '../../features/addresses/presentation/addresses_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+
+// Shared shell navigation
+import 'placeholder_screens.dart'; // Holds CustomerShellScaffold & Admin Placeholders
 
 final routerProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -44,6 +66,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final id = state.pathParameters['id'] ?? '';
                       return ProductDetailScreen(productId: id);
                     },
+                    routes: [
+                      GoRoute(
+                        path: 'review',
+                        builder: (context, state) {
+                          final id = state.pathParameters['id'] ?? '';
+                          return ReviewsScreen(productId: id);
+                        },
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'products',
@@ -110,6 +141,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final orderId = state.pathParameters['orderId'] ?? '';
                       return OrderDetailScreen(orderId: orderId);
                     },
+                  ),
+                  GoRoute(
+                    path: 'addresses',
+                    builder: (context, state) => const AddressesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'settings',
+                    builder: (context, state) => const SettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'notifications',
+                    builder: (context, state) => const NotificationsScreen(),
                   ),
                 ],
               ),

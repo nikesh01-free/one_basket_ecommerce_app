@@ -4,8 +4,6 @@
 *.pyc
 *.swp
 .DS_Store
-.env
-*.env
 .atom/
 .build/
 .buildlog/
@@ -45,3 +43,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ── SECRETS & ENVIRONMENT FILES ─────────────────────────────────────────────
+# Never commit real credentials. Copy .env.example → .env and fill in values.
+.env
+*.env
+.env.local
+.env.*.local
+
+# Android SDK local paths (machine-specific)
+android/local.properties
+
+# Android signing keys
+*.keystore
+*.jks
+key.properties
+
+# Firebase / Google services config (contains project credentials)
+google-services.json
+GoogleService-Info.plist
+
+# Stray / auto-generated files
+mxIZETNaUvUUugIN

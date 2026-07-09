@@ -4,6 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 
+import 'core/theme/theme_provider.dart';
+
 void main() async {
   // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'OneBasket',
@@ -39,7 +42,7 @@ class MyApp extends ConsumerWidget {
       // Theme architecture configuration
       theme: OBTheme.lightTheme,
       darkTheme: OBTheme.darkTheme,
-      themeMode: ThemeMode.system, // Respect system light/dark settings
+      themeMode: themeMode,
     );
   }
 }

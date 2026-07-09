@@ -170,6 +170,7 @@ class OBPasswordField extends StatelessWidget {
   final String? errorText;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final bool isEnabled;
 
   const OBPasswordField({
     super.key,
@@ -179,6 +180,7 @@ class OBPasswordField extends StatelessWidget {
     this.errorText,
     this.controller,
     this.onChanged,
+    this.isEnabled = true,
   });
 
   @override
@@ -192,6 +194,7 @@ class OBPasswordField extends StatelessWidget {
       onChanged: onChanged,
       isPassword: true,
       prefixIcon: Icons.lock_outline,
+      isEnabled: isEnabled,
     );
   }
 }

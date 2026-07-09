@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../theme/spacing.dart';
-import '../theme/radius.dart';
 import '../theme/shadows.dart';
 
 enum OBButtonVariant { primary, secondary, outlined, ghost, danger, success, text }
@@ -40,7 +39,7 @@ class _OBButtonState extends State<OBButton> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final bool isEnabled = widget.onPressed != null && !widget.isLoading;
 
-    // Resolve Size Properties
+    // Resolve Button Sizing Properties
     final double height = switch (widget.size) {
       OBButtonSize.small => 36.0,
       OBButtonSize.medium => 48.0,
@@ -53,72 +52,112 @@ class _OBButtonState extends State<OBButton> {
       OBButtonSize.large => OBSpacing.space6,
     };
 
-    // Resolve Background Color
-    Color getBackgroundColor() {
-      if (!isEnabled) return isDark ? const Color(0xFF2C2722) : OBColors.neutral300;
-      return switch (widget.variant) {
-        OBButtonVariant.primary => OBColors.primary500,
-        OBButtonVariant.secondary => OBColors.primary100,
-        OBButtonVariant.outlined => Colors.transparent,
-        OBButtonVariant.ghost => Colors.transparent,
-        OBButtonVariant.danger => OBColors.error,
-        OBButtonVariant.success => OBColors.success,
-        OBButtonVariant.text => Colors.transparent,
-      };
-    }
+    final double borderRadiusVal = switch (widget.size) {
+      OBButtonSize.small => 10.0,
+      OBButtonSize.medium => 14.0,
+      OBButtonSize.large => 18.0,
+    };
 
-    // Resolve Text/Icon Color
+    final BorderRadius borderRadius = BorderRadius.circular(borderRadiusVal);
+
+    // Resolve Text and Icon Colors
     Color getTextColor() {
-      if (!isEnabled) return OBColors.neutral400;
+      if (!isEnabled) {
+        return isDark ? Colors.white30 : OBColors.neutral400;
+      }
       return switch (widget.variant) {
-        OBButtonVariant.primary => Colors.white,
-        OBButtonVariant.secondary => OBColors.primary700,
-        OBButtonVariant.outlined => OBColors.primary500,
-        OBButtonVariant.ghost => OBColors.primary500,
-        OBButtonVariant.danger => Colors.white,
-        OBButtonVariant.success => Colors.white,
-        OBButtonVariant.text => OBColors.primary500,
+        OBButtonVariant.primary => isDark ? const Color(0xFFC1C9FF) : OBColors.primary500,
+        OBButtonVariant.secondary => isDark ? Colors.white : OBColors.neutral800,
+        OBButtonVariant.outlined => isDark ? Colors.white : OBColors.neutral800,
+        OBButtonVariant.ghost => isDark ? const Color(0xFFC1C9FF) : OBColors.primary500,
+        OBButtonVariant.danger => isDark ? const Color(0xFFEF5350) : OBColors.error,
+        OBButtonVariant.success => isDark ? const Color(0xFF81C784) : OBColors.success,
+        OBButtonVariant.text => isDark ? const Color(0xFFC1C9FF) : OBColors.primary500,
       };
     }
 
-    // Resolve Neomorphic Shadows
-    List<BoxShadow> getShadows() {
-      if (!isEnabled || widget.variant == OBButtonVariant.text || widget.variant == OBButtonVariant.ghost) {
-        return const [];
+    final Color contentColor = getTextColor();
+
+    // Resolve Button Decoration (Gradient or Solid Background)
+    Decoration getDecoration() {
+      if (!isEnabled) {
+        return BoxDecoration(
+          color: isDark ? const Color(0xFF252528) : OBColors.neutral200,
+          borderRadius: borderRadius,
+        );
       }
-      return OBShadows.neomorphic(level: 2, isDarkMode: isDark, pressed: _isPressed);
+
+      // Tactile Neomorphic Shadows (pure neomorphism)
+      List<BoxShadow> shadows = [];
+      if (widget.variant != OBButtonVariant.text && widget.variant != OBButtonVariant.ghost) {
+        shadows = OBShadows.neomorphic(
+          level: 2,
+          isDarkMode: isDark,
+          pressed: _isPressed,
+        );
+      }
+
+      switch (widget.variant) {
+        case OBButtonVariant.primary:
+        case OBButtonVariant.secondary:
+        case OBButtonVariant.danger:
+        case OBButtonVariant.success:
+          return BoxDecoration(
+            color: isDark ? const Color(0xFF2C2722) : OBColors.neutral100,
+            borderRadius: borderRadius,
+            boxShadow: shadows,
+            border: Border.all(
+              color: isDark ? Colors.white10 : OBColors.neutral200,
+              width: 1.0,
+            ),
+          );
+        case OBButtonVariant.outlined:
+          return BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: borderRadius,
+            border: Border.all(
+              color: isDark ? Colors.white12 : OBColors.neutral300,
+              width: 1.0,
+            ),
+          );
+        case OBButtonVariant.ghost:
+        case OBButtonVariant.text:
+          return BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: borderRadius,
+          );
+      }
     }
 
-    final double borderSize = (widget.variant == OBButtonVariant.outlined && isEnabled) ? 1.5 : 0.0;
-    final Color borderColor = isEnabled ? OBColors.primary500 : Colors.transparent;
-
-    Widget buttonChild = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (widget.isLoading)
-          SizedBox(
-            width: 18.0,
-            height: 18.0,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.0,
-              valueColor: AlwaysStoppedAnimation<Color>(getTextColor()),
+    // Build Loading Indicator or Main Button Child
+    Widget buttonContent = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 150),
+      child: widget.isLoading
+          ? _MinimalSpinner(color: contentColor)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.icon != null) ...[
+                  Icon(
+                    widget.icon,
+                    size: widget.size == OBButtonSize.small ? 15.0 : 18.0,
+                    color: contentColor,
+                  ),
+                  const SizedBox(width: 8.0),
+                ],
+                Text(
+                  widget.text,
+                  style: OBTypography.button.copyWith(
+                    color: contentColor,
+                    fontSize: widget.size == OBButtonSize.small ? 12.5 : 14.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                    height: 1.2,
+                  ),
+                ),
+              ],
             ),
-          )
-        else ...[
-          if (widget.icon != null) ...[
-            Icon(widget.icon, size: widget.size == OBButtonSize.small ? 16.0 : 18.0, color: getTextColor()),
-            const SizedBox(width: OBSpacing.space2),
-          ],
-          Text(
-            widget.text,
-            style: OBTypography.button.copyWith(
-              color: getTextColor(),
-              fontSize: widget.size == OBButtonSize.small ? 12.0 : 14.0,
-            ),
-          ),
-        ],
-      ],
     );
 
     return Semantics(
@@ -132,18 +171,59 @@ class _OBButtonState extends State<OBButton> {
           widget.onPressed?.call();
         } : null,
         onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 100),
-          height: height,
-          width: widget.isFullWidth ? double.infinity : null,
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          decoration: BoxDecoration(
-            color: getBackgroundColor(),
-            borderRadius: OBRadius.full,
-            border: borderSize > 0 ? Border.all(color: borderColor, width: borderSize) : null,
-            boxShadow: getShadows(),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.98 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          child: Container(
+            height: height,
+            width: widget.isFullWidth ? double.infinity : null,
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            decoration: getDecoration(),
+            child: Center(child: buttonContent),
           ),
-          child: Center(child: buttonChild),
+        ),
+      ),
+    );
+  }
+}
+
+class _MinimalSpinner extends StatefulWidget {
+  final Color color;
+  const _MinimalSpinner({required this.color});
+
+  @override
+  State<_MinimalSpinner> createState() => _MinimalSpinnerState();
+}
+
+class _MinimalSpinnerState extends State<_MinimalSpinner> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: SizedBox(
+        width: 16.0,
+        height: 16.0,
+        child: CircularProgressIndicator(
+          strokeWidth: 1.5,
+          valueColor: AlwaysStoppedAnimation<Color>(widget.color),
         ),
       ),
     );
